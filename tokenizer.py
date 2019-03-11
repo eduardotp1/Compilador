@@ -27,6 +27,10 @@ class Tokenizer:
             self.actual=Token('MULT',"*")
             self.position+=1
             return self.actual
+        if self.origin[self.position]=="'":
+            self.actual=Token('COM',"'")
+            self.position+=1
+            return self.actual 
         num=""
         while  self.position<len(self.origin) and self.origin[self.position].isdigit():
             num=num+self.origin[self.position]
