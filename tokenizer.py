@@ -10,6 +10,22 @@ class Tokenizer:
             self.actual=Token('EOF',"")
             return self.actual
 
+        while self.origin[self.position]==(" "):
+            self.position+=1
+            if self.position==len(self.origin):
+                self.actual=Token('EOF',"")
+                return self.actual
+        
+        if self.origin[self.position]=="(":
+            self.actual=Token('OPEN_PAR',"(")
+            self.position+=1
+            return self.actual
+        
+        if self.origin[self.position]==")":
+            self.actual=Token('CLOSE_PAR',")")
+            self.position+=1
+            return self.actual
+
         if self.origin[self.position]=="+":
             self.actual=Token('PLUS',"+")
             self.position+=1
