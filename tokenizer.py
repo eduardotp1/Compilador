@@ -1,4 +1,4 @@
-from token import Token
+from token import *
 class Tokenizer:
     def __init__(self, origin):
         self.origin=origin
