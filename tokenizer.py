@@ -4,6 +4,7 @@ class Tokenizer:
         self.origin=origin
         self.position=0
         self.actual=None
+        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END"}
 
     def selectNext(self):
         if self.position==len(self.origin):
@@ -47,9 +48,42 @@ class Tokenizer:
             self.actual=Token('COM',"'")
             self.position+=1
             return self.actual 
+        if self.origin[self.position]=="=":
+            self.actual=Token('ASSIGMENT',"=")
+            self.position+=1
+            return self.actual 
+
+        if self.origin[self.position]=="\n":
+            self.actual=Token('BREAK',"\n")
+            self.position+=1
+            return self.actual 
+
+
         num=""
-        while  self.position<len(self.origin) and self.origin[self.position].isdigit():
+        while self.position<len(self.origin) and self.origin[self.position].isdigit():
             num=num+self.origin[self.position]
             self.position+=1
-        self.actual=Token('INT',int(num))
+        if num!="":
+
+            self.actual=Token('INT',int(num))
+            return self.actual
+        
+        identifier=""
+        while  self.position<len(self.origin):
+            if self.origin[self.position].isalpha():
+                identifier=identifier+self.origin[self.position]
+                self.position+=1
+                if self.origin[self.position] == "_" or self.origin[self.position].isdigit() or self.origin[self.position].isalpha():
+                    identifier=identifier+self.origin[self.position]
+                    self.position+=1
+                else:
+                    break
+            else:
+                break
+        identifier=identifier.upper()
+        if identifier in self.reserved:
+            self.actual=Token(identifier,identifier)
+            return self.actual
+        else:
+            self.actual=Token('IDENTIFIER',identifier)
         return self.actual

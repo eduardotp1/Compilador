@@ -1,1 +1,8 @@
-2+2*2
+Begin
+begin
+x=2
+y=5
+z=x+y
+end
+Print z*3
+end
