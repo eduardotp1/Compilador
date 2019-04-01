@@ -79,12 +79,12 @@ class Parser:
             t=Parser.tokens.selectNext()
             return res
         elif Parser.tokens.actual.type=='PLUS':
-            res=UnOp("+",[Parser.parseFactor()])
             t=Parser.tokens.selectNext()
+            res=UnOp("+",[Parser.parseFactor()])
             return res
         elif Parser.tokens.actual.type=='MINUS':
-            res=UnOp("-",[Parser.parseFactor()])
             t=Parser.tokens.selectNext()
+            res=UnOp("-",[Parser.parseFactor()])
             return res
 
         elif Parser.tokens.actual.type=='OPEN_PAR':
