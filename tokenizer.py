@@ -4,7 +4,7 @@ class Tokenizer:
         self.origin=origin
         self.position=0
         self.actual=None
-        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END"}
+        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END","IF":"IF","WHILE":"WHILE","ELSE":"ELSE","THEN":"THEN","WEND":"WEND"}
 
     def selectNext(self):
         if self.position==len(self.origin):
