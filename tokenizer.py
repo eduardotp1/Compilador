@@ -1,10 +1,11 @@
-from token import *
+from token import Token
+
 class Tokenizer:
     def __init__(self, origin):
         self.origin=origin
         self.position=0
         self.actual=None
-        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END","IF":"IF","WHILE":"WHILE","ELSE":"ELSE","THEN":"THEN","WEND":"WEND"}
+        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END","IF":"IF","WHILE":"WHILE","ELSE":"ELSE","THEN":"THEN","WEND":"WEND","INPUT":'INPUT'}
 
     def selectNext(self):
         if self.position==len(self.origin):
@@ -49,7 +50,17 @@ class Tokenizer:
             self.position+=1
             return self.actual 
         if self.origin[self.position]=="=":
-            self.actual=Token('ASSIGMENT',"=")
+            self.actual=Token('EQUAL',"=")
+            self.position+=1
+            return self.actual 
+
+        if self.origin[self.position]=="<":
+            self.actual=Token('SMALLER',"<")
+            self.position+=1
+            return self.actual 
+
+        if self.origin[self.position]==">":
+            self.actual=Token('BIGGER',">")
             self.position+=1
             return self.actual 
 
@@ -69,11 +80,11 @@ class Tokenizer:
             return self.actual
         
         identifier=""
-        while  self.position<len(self.origin):
+        while  self.position<len(self.origin)-2:
             if self.origin[self.position].isalpha():
                 identifier=identifier+self.origin[self.position]
                 self.position+=1
-                if self.origin[self.position] == "_" or self.origin[self.position].isdigit() or self.origin[self.position].isalpha():
+                if self.position<len(self.origin)-1 and self.origin[self.position] == "_" or self.origin[self.position].isdigit() or self.origin[self.position].isalpha():
                     identifier=identifier+self.origin[self.position]
                     self.position+=1
                 else:
