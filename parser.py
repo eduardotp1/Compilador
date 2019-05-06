@@ -4,16 +4,39 @@ from prePro import *
 from node import *
 
 class Parser:
-    def parseStatements():
-        list_of_children=[]
-        while Parser.tokens.actual.type!='EOF' and Parser.tokens.actual.type!='WEND' and Parser.tokens.actual.type!='END' and Parser.tokens.actual.type!='ELSE':
-            list_of_children.append(Parser.parseStatement())
-            
-            if Parser.tokens.actual.type != 'BREAK':
-                raise Exception("tem que dar break line")
+
+    def parseProgram():
+        if Parser.tokens.actual.type=='SUB':
             t=Parser.tokens.selectNext()
-        res = StatementsNode("STATEMENTS",list_of_children)
-        return res
+            if Parser.tokens.actual.type=='MAIN':
+                t=Parser.tokens.selectNext()
+                if Parser.tokens.actual.type=='OPEN_PAR':
+                    t=Parser.tokens.selectNext()
+                    if Parser.tokens.actual.type=='CLOSE_PAR':
+                        t=Parser.tokens.selectNext()
+                        if Parser.tokens.actual.type=='BREAK':
+                            t=Parser.tokens.selectNext()
+                            list_of_children=[]
+                            while Parser.tokens.actual.type!='END':
+                                list_of_children.append(Parser.parseStatement())
+                                if Parser.tokens.actual.type=='BREAK':
+                                    t=Parser.tokens.selectNext()
+                            t=Parser.tokens.selectNext()
+                            if Parser.tokens.actual.type=='SUB':
+                                t=Parser.tokens.selectNext()
+                                return StatementsNode("STATEMENTS",list_of_children)
+                            else:
+                                raise Exception("Must insert a SUB at the end.")
+                        else:
+                            raise Exception("Must break line.")
+                    else:
+                        raise Exception("Must close parenthesis.")
+                else:
+                    raise Exception("Must open parenthesis.")
+            else:
+                raise Exception("Must insert MAIN in the begin.")
+        else:
+            raise Exception("Must insert SUB in the begin.")
 
 
     def parseStatement():
@@ -23,17 +46,17 @@ class Parser:
 
             if Parser.tokens.actual.type=='EQUAL':
                 t=Parser.tokens.selectNext()
-                res = AssigmentOp("=",[variavel,Parser.parseExpression()])
-                return res
+                return AssigmentOp("=",[variavel,Parser.parseRelExpression()])
             else:
-                raise Exception("Must define a value for the variable. Column:"+str(Parser.tokens.position))
+                print(variavel.value)
+                raise Exception("Must define a value for the variable.")
+
+
         if Parser.tokens.actual.type=='PRINT':
             t=Parser.tokens.selectNext()
-            res=PrintNode("PRINT",[Parser.parseExpression()])
-            return res
-        # if Parser.tokens.actual.type=='BEGIN':
-        #     res=Parser.parseStatements()
-        #     return res
+            return PrintNode("PRINT",[Parser.parseRelExpression()])
+
+
         if Parser.tokens.actual.type=='IF':
             children=[]
             t=Parser.tokens.selectNext()
@@ -43,29 +66,56 @@ class Parser:
                 t=Parser.tokens.selectNext()
                 if Parser.tokens.actual.type=='BREAK':
                     t=Parser.tokens.selectNext()
-                    verdade=Parser.parseStatements()
-                    children.append(verdade)
+                    verdade=[]
+                    while Parser.tokens.actual.type!='END' and Parser.tokens.actual.type!='ELSE':
+                        verdade.append(Parser.parseStatement())
+                        if Parser.tokens.actual.type=='BREAK':
+                            t=Parser.tokens.selectNext()
+                    verdades=StatementsNode("STATEMENTS",verdade)
+                    children.append(verdades)
                     if Parser.tokens.actual.type=='ELSE':
                         t=Parser.tokens.selectNext()
                         if Parser.tokens.actual.type=='BREAK':
                             t=Parser.tokens.selectNext()
-                            mentira=Parser.parseStatements()
-                            children.append(mentira)
+                            mentira=[]
+                            while Parser.tokens.actual.type!='END':
+                                mentira.append(Parser.parseStatement())
+                                if Parser.tokens.actual.type=='BREAK':
+                                    t=Parser.tokens.selectNext()
+                            mentiras=StatementsNode("STATEMENTS",mentira)
+                            children.append(mentiras)                                
                     if Parser.tokens.actual.type=='END':
                         t=Parser.tokens.selectNext()
                         if Parser.tokens.actual.type=='IF':
                             t=Parser.tokens.selectNext()
                             return IfNode("IF",children)
 
+
         if Parser.tokens.actual.type=='WHILE':
             t=Parser.tokens.selectNext()
             condicao=Parser.parseRelExpression()
             if Parser.tokens.actual.type=='BREAK':
                 t=Parser.tokens.selectNext()
-                verdade=Parser.parseStatements()
+                verdade=[]
+                while Parser.tokens.actual.type!='WEND':
+                    verdade.append(Parser.parseStatement())
+                    if Parser.tokens.actual.type=='BREAK':
+                        t=Parser.tokens.selectNext()
+                verdades=StatementsNode("STATEMENTS",verdade)
                 if Parser.tokens.actual.type=='WEND':
                     t=Parser.tokens.selectNext()
-                    return WhileNode("WHILE",[condicao,verdade])
+                    return WhileNode("WHILE",[condicao,verdades])
+        
+
+        if Parser.tokens.actual.type=='DIM':
+            t=Parser.tokens.selectNext()
+            if Parser.tokens.actual.type=='IDENTIFIER':
+                variavel=IdentifierNode(Parser.tokens.actual.value,[])
+                t=Parser.tokens.selectNext()
+                if Parser.tokens.actual.type=='AS':
+                    t=Parser.tokens.selectNext()
+                    tipo=Parser.parseType()
+                    return VarDec("vardec", [variavel, tipo])
         else:
             return NoOp(None,None)
         
@@ -116,6 +166,10 @@ class Parser:
             res=IntVal(Parser.tokens.actual.value,[])
             t=Parser.tokens.selectNext()
             return res
+        elif Parser.tokens.actual.type == 'TRUE' or Parser.tokens.actual.type == 'FALSE':
+            res = BooleanVal(Parser.tokens.actual.value, [])
+            t = Parser.tokens.selectNext()
+            return res
         elif Parser.tokens.actual.type=='INPUT':
             res = InputNode(Parser.tokens.actual.value, [])
             t=Parser.tokens.selectNext()
@@ -138,23 +192,35 @@ class Parser:
             return res
         elif Parser.tokens.actual.type=='OPEN_PAR':
             t=Parser.tokens.selectNext()
-            res=Parser.parseExpression()
+            res=Parser.parseRelExpression()
             if Parser.tokens.actual.type=='CLOSE_PAR':
                 t=Parser.tokens.selectNext()
                 return res
             else:
-                raise Exception("Didn't close parenthesis. Column:"+str(Parser.tokens.position))
+                raise Exception("Didn't close parenthesis. ")
         else:
-            raise Exception("Unexpected token. Column:"+str(Parser.tokens.position))
+            raise Exception("Unexpected token.")
+
+
+    def parseType():
+        if Parser.tokens.actual.type=="INTEGER":
+            t=Parser.tokens.selectNext()
+            return TypeNode('INTEGER', [])
+        if Parser.tokens.actual.type=="BOOLEAN":
+            t=Parser.tokens.selectNext()
+            return TypeNode('BOOLEAN', [])
 
 
     def run(code):
         code=PrePro.filter(code)
         Parser.tokens=Tokenizer(code)
         t=Parser.tokens.selectNext()
-        res=Parser.parseStatements()
+        res=Parser.parseProgram()
+
+        while Parser.tokens.actual.type == "BREAK":
+            Parser.tokens.selectNext()
 
         if Parser.tokens.actual.type == 'EOF':
             return res
         else:
-            raise Exception("Unexpected token. Column:"+str(Parser.tokens.position))
+            raise Exception("Unexpected token.")

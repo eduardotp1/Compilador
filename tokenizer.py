@@ -1,11 +1,17 @@
-from token import Token
+# from token import Token
+
+class Token:
+    def __init__ (self, type,value):
+        self.type=type
+        self.value=value
+    
 
 class Tokenizer:
     def __init__(self, origin):
         self.origin=origin
         self.position=0
         self.actual=None
-        self.reserved={"BEGIN":"BEGIN","PRINT":"PRINT","END":"END","IF":"IF","WHILE":"WHILE","ELSE":"ELSE","THEN":"THEN","WEND":"WEND","INPUT":'INPUT'}
+        self.reserved=["BEGIN","PRINT","END","IF","WHILE","ELSE","THEN","WEND","INPUT","DIM","AS","SUB","MAIN","INTEGER","BOOLEAN","TRUE", "FALSE"]
 
     def selectNext(self):
         if self.position==len(self.origin):

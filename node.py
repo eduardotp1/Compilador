@@ -6,47 +6,63 @@ class BinOp(Node):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        if self.value=="+":
-            return(self.children[0].Evaluate(table)+self.children[1].Evaluate(table))
-        if self.value=="-":
-            return(self.children[0].Evaluate(table)-self.children[1].Evaluate(table))
-        if self.value=="*":
-            return(self.children[0].Evaluate(table)*self.children[1].Evaluate(table))
-        if self.value=="/":
-            return(self.children[0].Evaluate(table)//self.children[1].Evaluate(table))
-        if self.value=="<":
-            if ((self.children[0].Evaluate(table)<self.children[1].Evaluate(table))):
-                return True
-            else:
-                return False
-        if self.value==">":
-            if ((self.children[0].Evaluate(table)>self.children[1].Evaluate(table))):
-                return True
-            else:
-                return False
-        if self.value=="=":
-            if ((self.children[0].Evaluate(table)==self.children[1].Evaluate(table))):
-                return True
-            else:
-                return False
+        x=self.children[0].Evaluate(table)
+        y=self.children[1].Evaluate(table)
+        if x[1]==y[1]=="INTEGER":
+            if self.value=="+":
+                return [(x[0]+y[0]),"INTEGER"]
+            if self.value=="-":
+                return [(x[0]-y[0]),"INTEGER"]
+            if self.value=="*":
+                return [(x[0]*y[0]),"INTEGER"]
+            if self.value=="/":
+                return [(x[0]//y[0]),"INTEGER"]
+            if self.value=="<":
+                if ((x[0]<y[0])):
+                    return [True,"BOOLEAN"]
+                else:
+                    return [False,"BOOLEAN"]
+            if self.value==">":
+                if ((x[0]>y[0])):
+                    return [True,"BOOLEAN"]
+                else:
+                    return [False,"BOOLEAN"]
+            if self.value=="=":
+                if ((x[0]==y[0])):
+                    return [True,"BOOLEAN"]
+                else:
+                    return [False,"BOOLEAN"]
+
+            if x[1]==y[1]=="BOOLEAN":
+                if self.value == 'and':
+                    return [x[0] and y[0], "BOOLEAN"]
+                if self.value == 'or':
+                    return [x[0] or y[0], "BOOLEAN"]
+
+            raise Exception("Can't operate with two different types")
 
 class UnOp(Node):
     def __init__ (self, value,children):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        if self.value=="+":
-            return(+self.children[0].Evaluate(table))
-        if self.value=="-":
-            return(-self.children[0].Evaluate(table))
+        if self.children[0].Evaluate(table)[1] == "INTEGER":
+            if self.value=="+":
+                return [(+self.children[0].Evaluate(table)[0]),"INTEGER"]
+            if self.value=="-":
+                return [(-self.children[0].Evaluate(table)[0]),"INTEGER"]
 
+        if self.children[0].Evaluate(table)[1] == "BOOLEAN":
+            if self.value == 'not':
+                return [not (self.children[0].Evaluate(table)[0]), "BOOLEAN"]
+        raise Exception("Type is not correct")
 
 class IntVal(Node):
     def __init__ (self, value,children):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        return(self.value)
+        return [self.value, "INTEGER"]
 
 class NoOp(Node):
     def __init__ (self, value,children):
@@ -66,14 +82,26 @@ class AssigmentOp(Node):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        table.set_value(self.children[0].value, self.children[1].Evaluate(table))
+        if self.children[0].value not in table.table:
+            raise Exception("The variable is not declared")
+        if table.table[self.children[0].value][1]==self.children[1].Evaluate(table)[1]:
+            table.set_value(self.children[0].value, self.children[1].Evaluate(table))
+        else:
+            raise Exception("The type of the value is not the type of the variable")
+
+class TypeNode(Node):
+    def __init__ (self, value,children):
+        self.value=value
+        self.children=children
+    def Evaluate(self,table):
+        return self.value
 
 class PrintNode(Node):
     def __init__ (self, value,children):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        print(self.children[0].Evaluate(table))
+        print(self.children[0].Evaluate(table)[0])
 
 class StatementsNode(Node):
     def __init__ (self, value,children):
@@ -88,7 +116,9 @@ class WhileNode(Node):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        while self.children[0].Evaluate(table):
+        if self.children[0].Evaluate(table)[1]!="BOOLEAN":
+            raise Exception("Type must be boolean")
+        while self.children[0].Evaluate(table)[0]:
             self.children[1].Evaluate(table)
 
 class IfNode(Node):
@@ -96,7 +126,9 @@ class IfNode(Node):
         self.value=value
         self.children=children
     def Evaluate(self,table):
-        if self.children[0].Evaluate(table):
+        if self.children[0].Evaluate(table)[1]!="BOOLEAN":
+            raise Exception("Type must be boolean")
+        if self.children[0].Evaluate(table)[0]:
             self.children[1].Evaluate(table)
         else:
             if len(self.children) == 3:
@@ -108,4 +140,20 @@ class InputNode(Node):
         self.children = children
 
     def Evaluate(self, table):
-        return int(input())
+        return [int(input()), "INTEGER"]
+
+class VarDec(Node):
+    def __init__(self, value, children):
+        self.value = value
+        self.children = children
+
+    def Evaluate(self,  table):
+        table.set_type(self.children[0].value, self.children[1].value)
+
+class BooleanVal(Node):
+    def __init__(self, value, children):
+        self.value = value
+        self.children = children
+
+    def Evaluate(self,  table):
+        return [self.value, "BOOLEAN"]
