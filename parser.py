@@ -46,9 +46,8 @@ class Parser:
 
             if Parser.tokens.actual.type=='EQUAL':
                 t=Parser.tokens.selectNext()
-                return AssigmentOp("=",[variavel,Parser.parseRelExpression()])
+                return AssignmentOp("=",[variavel,Parser.parseRelExpression()])
             else:
-                print(variavel.value)
                 raise Exception("Must define a value for the variable.")
 
 

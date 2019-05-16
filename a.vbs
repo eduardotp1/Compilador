@@ -1,18 +1,13 @@
-sub main()
-dim sum as integer
-dim y as integer
-sum=2+2*(3+1)
-while sum<15
-print sum
-sum=sum+1
-wend
-print sum+3
-
-y = input
-if y=1 then
-print 1
-else
-print 0
-end if
-
-end sub
+Sub Main()
+Dim i as Integer
+Dim n as Integer
+Dim f as Integer
+n = 5
+i = 2
+f = 1
+While i < n + 1
+f = f * i
+i = i + 1
+Wend
+Print f
+End Sub
