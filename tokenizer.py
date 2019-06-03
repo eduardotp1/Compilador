@@ -11,7 +11,7 @@ class Tokenizer:
         self.origin=origin
         self.position=0
         self.actual=None
-        self.reserved=["BEGIN","PRINT","END","IF","WHILE","ELSE","THEN","WEND","INPUT","DIM","AS","SUB","MAIN","INTEGER","BOOLEAN","TRUE", "FALSE"]
+        self.reserved=["BEGIN","PRINT","END","IF","WHILE","ELSE","THEN","WEND","INPUT","DIM","AS","SUB","INTEGER","BOOLEAN","TRUE", "FALSE", "CALL", "FUNCTION","AND","OR","NOT"]
 
     def selectNext(self):
         if self.position==len(self.origin):
@@ -72,6 +72,11 @@ class Tokenizer:
 
         if self.origin[self.position]=="\n":
             self.actual=Token('BREAK',"\n")
+            self.position+=1
+            return self.actual 
+
+        if self.origin[self.position]==",":
+            self.actual=Token('COMMA',",")
             self.position+=1
             return self.actual 
 

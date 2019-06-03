@@ -1,3 +1,6 @@
+
+from symbolTable import SymbolTable
+
 class Node:
         def Evaluate(self,table):
             pass
@@ -33,13 +36,33 @@ class BinOp(Node):
                 else:
                     return [False,"BOOLEAN"]
 
-            if x[1]==y[1]=="BOOLEAN":
-                if self.value == 'and':
-                    return [x[0] and y[0], "BOOLEAN"]
-                if self.value == 'or':
-                    return [x[0] or y[0], "BOOLEAN"]
+        if x[1]==y[1]=="BOOLEAN":
+            if x[0]=="TRUE" or x[0]:
+                x1=True
+            if x[0]=="FALSE":
+                x1=False
+            if y[0]=="TRUE" or y[0]:
+                y1=True
+            if y[0]=="FALSE":
+                y1=False
+            
+            if self.value == 'and':
+                if x1 and y1:
+                    return ["TRUE", "BOOLEAN"]
+                else:
+                    return ["FALSE", "BOOLEAN"]
+            if self.value == 'or':
+                if x1 or y1:
+                    return ["TRUE", "BOOLEAN"]
+                else:
+                    return ["FALSE", "BOOLEAN"]
+            if self.value=="=":
+                if x1 == y1:
+                    return ["TRUE", "BOOLEAN"]
+                else:
+                    return ["FALSE", "BOOLEAN"]
 
-            raise Exception("Can't operate with two different types")
+        raise Exception("Can't operate with two different types")
 
 class UnOp(Node):
     def __init__ (self, value,children):
@@ -53,8 +76,11 @@ class UnOp(Node):
                 return [(-self.children[0].Evaluate(table)[0]),"INTEGER"]
 
         if self.children[0].Evaluate(table)[1] == "BOOLEAN":
-            if self.value == 'not':
-                return [not (self.children[0].Evaluate(table)[0]), "BOOLEAN"]
+            if self.value == 'NOT':
+                if (self.children[0].Evaluate(table)[0]=="FALSE"):
+                    return ["TRUE", "BOOLEAN"]
+                else:
+                    return ["FALSE", "BOOLEAN"]
         raise Exception("Type is not correct")
 
 class IntVal(Node):
@@ -84,8 +110,10 @@ class AssigmentOp(Node):
     def Evaluate(self,table):
         if self.children[0].value not in table.table:
             raise Exception("The variable is not declared")
-        if table.table[self.children[0].value][1]==self.children[1].Evaluate(table)[1]:
-            table.set_value(self.children[0].value, self.children[1].Evaluate(table))
+        x=self.children[0].value
+        y=self.children[1].Evaluate(table)
+        if table.table[x][1]==y[1]:
+            table.set_value(x, y[0])
         else:
             raise Exception("The type of the value is not the type of the variable")
 
@@ -157,3 +185,61 @@ class BooleanVal(Node):
 
     def Evaluate(self,  table):
         return [self.value, "BOOLEAN"]
+
+class SubDec(Node):
+    def __init__(self, value, children):
+        self.value = value
+        self.children = children
+
+    def Evaluate(self,  table):
+        if self.value in table.table:
+            raise Exception("The variable is already declared")
+        table.set_type(self.value,"SUB")
+        table.set_value(self.value,self)
+        
+
+class FuncDec(Node):
+    def __init__(self, value, children):
+        self.value = value
+        self.children = children
+
+    def Evaluate(self, table):
+        if self.value in table.table:
+            raise Exception("The variable is already declared")
+        table.set_type(self.value,"FUNC")
+        table.set_value(self.value,self)
+
+class Call(Node):
+    def __init__(self, value, children):
+        self.value = value
+        self.children = children
+
+    def Evaluate(self, table):
+        #recupera no do ST, get symbol
+        #evaluate de todos filhos
+        #da o setter nos argumentos
+        #evaluate no ultimo filho
+        #retorna via o nome
+        dec=table.get_value2(self.value)[0] #no func ou sub
+        tipo=table.get_value2(self.value)[1] #tipo do no, func ou sub
+        new_table=SymbolTable(table)
+        init=0
+        if tipo=="FUNC":
+            new_table.table[self.value] =  [None, dec.children[0].Evaluate(table)]
+            init=1
+        j=0
+        for i in range(init, len(dec.children)-1):
+            dec.children[i].Evaluate(new_table)
+            argument=self.children[i-init].Evaluate(table)
+            argument_value=argument[0]
+            argument_type=argument[1]
+            parameter_type=dec.children[i].children[1].Evaluate(table)  #new_table.get_value(argument_type)
+            if argument_type!=parameter_type:
+                raise Exception("tipos errados")
+            new_table.set_value(dec.children[i].children[0].value,argument_value)
+            j+=1
+        if (j) != len(self.children):
+            raise Exception("quantidade de argumentos distintos")
+        dec.children[-1].Evaluate(new_table)
+        if tipo=="FUNC":
+            return new_table.get_value(self.value)

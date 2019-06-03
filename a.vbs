@@ -1,18 +1,12 @@
-sub main()
-dim sum as integer
-dim y as integer
-sum=2+2*(3+1)
-while sum<15
-print sum
-sum=sum+1
-wend
-print sum+3
+Sub main()
+    ' bool ops
+    Dim bt as boolean
+    Dim bf as boolean
+    bt = True
+    bf = False
 
-y = input
-if y=1 then
-print 1
-else
-print 0
-end if
-
+    print bf and bt
+    print bf or bt
+    print not(not(bf))
+    print not((bt and bf) or bf)
 end sub

@@ -11,5 +11,5 @@ file = sys.argv[1]
 f = open(file, "r")
 code=f.read()
 tree=Parser.run(code)
-table=SymbolTable()
+table=SymbolTable(None)
 tree.Evaluate(table)
