@@ -1,12 +1,39 @@
-Sub main()
-    ' bool ops
-    Dim bt as boolean
-    Dim bf as boolean
-    bt = True
-    bf = False
+Sub check(n as integer)
+    dim tres as integer
+    dim cinco as integer
+    dim flag as boolean
+    
+    tres = (n - (n / 3 * 3))
+    cinco = (n - (n / 5 * 5))
+    flag = True
 
-    print bf and bt
-    print bf or bt
-    print not(not(bf))
-    print not((bt and bf) or bf)
+    if (tres = 0) and (cinco = 0) then
+        print 00001111
+        flag = False
+    end if
+
+    if (tres = 0) and (flag = True) then
+        print 0000
+        flag = False
+    end if
+
+    if (cinco = 0) and (flag = True) then
+        print 1111
+    end if
+End Sub
+
+Sub fizzBuzz()
+    ' adaptado da sabrina
+    Dim n as integer
+
+    n = input
+
+    while n > 0
+        Call check(n)
+        n = n - 1     
+    wend
+End Sub
+
+Sub main()
+    Call fizzBuzz()
 end sub
