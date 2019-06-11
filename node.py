@@ -216,16 +216,18 @@ class Call(Node):
         self.children = children
 
     def Evaluate(self, table):
-        dec=table.get_value2(self.value)[0] #no func ou sub
-        tipo=table.get_value2(self.value)[1] #tipo do no, func ou sub
+        no=table.get_value2(self.value)
+        dec=no[0] #no func ou sub
+        tipo=no[1] #tipo do no, func ou sub
         new_table=SymbolTable(table)
         init=0
+        if tipo=="INTEGER":
+            num=new_table.get_value(self.value)[0]/2
+            return [num,"INTEGER"]
         if tipo=="FUNC":
             new_table.table[self.value] =  [None, dec.children[0].Evaluate(table)]
             init=1
         j=0
-        print(dec)
-        print(tipo)
         for i in range(init, len(dec.children)-1):
             dec.children[i].Evaluate(new_table)
             argument=self.children[i-init].Evaluate(table)
